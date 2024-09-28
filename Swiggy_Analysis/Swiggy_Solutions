@@ -1,0 +1,96 @@
+-- Swiggy Data Analysis Using SQL | Swiggy Case Study
+USE swiggy_analysis;
+
+-- HOW MANY RESTAURANTS HAVE A RATING GREATER THAN 4.5?
+SELECT count(DISTINCT restaurant_no) AS highest_rating_count
+FROM swiggy
+WHERE rating > 4.5;
+
+-- WHICH IS THE TOP 1 CITY WITH THE HIGHEST NUMBER OF RESTAURANTS?
+SELECT city, count(DISTINCT restaurant_name) AS Restaurant_Count
+FROM swiggy
+GROUP BY city
+ORDER BY Restaurant_Count DESC
+LIMIT 1;
+
+-- HOW MANY RESTAURANTS HAVE THE WORD "PIZZA" IN THEIR NAME?
+SELECT count(DISTINCT restaurant_name) AS Restaurant_Count
+FROM swiggy
+WHERE restaurant_name LIKE "%pizza%";
+
+-- WHAT IS THE MOST COMMON CUISINE AMONG THE RESTAURANTS IN THE DATASET?
+SELECT cuisine, count(cuisine) AS cuisine_count
+FROM swiggy
+GROUP BY cuisine
+ORDER BY cuisine_count DESC
+LIMIT 1;
+
+-- WHAT IS THE AVERAGE RATING OF RESTAURANTS IN EACH CITY?
+SELECT DISTINCT city, avg(rating) AS avg_rating
+FROM swiggy
+GROUP BY city
+ORDER BY avg_rating DESC;
+
+-- WHAT IS THE HIGHEST PRICE OF ITEM UNDER THE 'RECOMMENDED' MENUCATEGORY FOR EACH RESTAURANT?
+SELECT DISTINCT restaurant_name, menu_category, max(price) AS max_price
+FROM swiggy
+WHERE menu_category = "Recommended"
+GROUP BY restaurant_name, menu_category;
+
+-- FIND THE TOP 5 MOST EXPENSIVE RESTAURANTS THAT OFFER CUISINE OTHER THAN INDIAN CUISINE.
+SELECT DISTINCT restaurant_name, cuisine, cost_per_person
+FROM swiggy
+WHERE cuisine <> "Indian"
+GROUP BY restaurant_name, cuisine, cost_per_person
+ORDER BY cost_per_person DESC
+LIMIT 5;
+
+-- FIND THE RESTAURANTS THAT HAVE AN AVERAGE COST WHICH IS HIGHER THAN THE TOTAL AVERAGE COST OF ALL RESTAURANTS TOGETHER.
+SELECT DISTINCT restaurant_name, cost_per_person
+FROM swiggy
+WHERE cost_per_person > (SELECT avg(cost_per_person)
+FROM swiggy)
+ORDER BY cost_per_person DESC;
+
+-- RETRIEVE THE DETAILS OF RESTAURANTS THAT HAVE THE SAME NAME BUT ARE LOCATED IN DIFFERENT CITIES.
+SELECT DISTINCT S1.restaurant_name, s1.city, s2.city
+FROM swiggy S1 JOIN swiggy S2 ON S1.restaurant_name = s2.restaurant_name AND s1.city <> s2.city;
+
+-- WHICH 3 RESTAURANT OFFERS THE MOST NUMBER OF ITEMS IN THE 'MAIN COURSE'CATEGORY?
+SELECT DISTINCT restaurant_name, menu_category, count(item) AS max_count
+FROM swiggy
+WHERE menu_category = "Main Course"
+GROUP BY restaurant_name, menu_category
+ORDER BY max_count DESC
+LIMIT 3;
+
+-- LIST THE NAMES OF RESTAURANTS THAT ARE 100% VEGEATARIAN IN ALPHABETICAL ORDER OF RESTAURANT NAME.
+SELECT DISTINCT restaurant_name,
+(count(case when `veg_or_non-veg`='Veg' then 1 end)*100/
+count(*)) as vegetarian_percetage
+FROM swiggy
+GROUP BY restaurant_name
+HAVING vegetarian_percetage=100.00
+ORDER BY restaurant_name;
+
+-- WHICH IS THE RESTAURANT PROVIDING THE LOWEST AVERAGE PRICE FOR ALL ITEMS?
+SELECT DISTINCT restaurant_name, AVG(price) AS avg_price
+FROM swiggy
+GROUP BY restaurant_name
+ORDER BY avg_price
+LIMIT 1;
+
+-- WHICH TOP 5 RESTAURANT OFFERS HIGHEST NUMBER OF CATEGORIES?
+SELECT DISTINCT restaurant_name, count(DISTINCT menu_category) AS categories
+FROM swiggy
+GROUP BY restaurant_name
+ORDER BY categories DESC
+LIMIT 5;
+
+-- WHICH RESTAURANT PROVIDES THE HIGHEST PERCENTAGE OF NON-VEGEATARIAN FOOD?
+SELECT DISTINCT restaurant_name,
+(count(case when `veg_or_non-veg`='Non-veg' then 1 end)*100
+/count(*)) AS nonvegetarian_percentage
+FROM swiggy
+GROUP BY restaurant_name
+ORDER BY nonvegetarian_percentage DESC LIMIT 1;
